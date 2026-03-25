@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
+\usepackage[utf8]{inputenc}
+
+\title{Data Analysis for Geoscience}
+\author{Nathasya Christien}
+
+\begin{document}
+
+\maketitle
+
+\section{Intro}
+\subsection{Course syllabus}
+\begin{itemize}
+    \item Gridded dataset - ENSO index
+    \item Trends - significange, temperature Trends
+    \item Correlation and covariance - ENSO $\rightarrow$ rainfall, SST $\rightarrow$ rainfall
+    \item Break-point analysis - define onset Indian monsoon
+    \item FFT - temperature diurnal or annual [stationary analysis]
+    \item Wavelets - African East Wind [non-stationary analysis]
+    \item EOF - spatial, spatial rainfall, African monsoon onset - NAO
+    \item Bonus: Linear stability analysis 
+    \item Can be organized if there's interest: Climate feedback analysis
+\end{itemize}
+
+\subsection{Class remarks}
+\begin{itemize}
+    \item Command to print output and let us scroll: ncdump ... $\vert$ less 
+    \item NC file in climate field follows climate format (CF) compliant
+    \item $\vert$ is called pipe, tr is translate or replacing
+    \item Always print (echo) our command first, especially when we use wild card (* or ?) or force deletation
+    \item enlarge : choose one grid and project it
+    \item cdo uses broadcasting method to match time axis. It's kind of like periodic extension for missing time index. Can be a problem when we have mismatch calender system.
+    \item cdo mean will neglect missing values and only consider valid values as valid data; cdo avg will return missing value when it appears in our time series.
+    \item If we do simple arithmetic average for global temperature, we will be biased towards the pole. The output would be too cold.
+    \item Conditional commands with cdo to compare two files: ge, gt, eq, lt, le
+    \item Conditional commands with cdo to compare a file with a constant: gec
+    \item Writing file is more costly than some operators, so instead of writing the outputs, it's better to pipe the process (use - for cdo)
+    \item There's an argument to tell cdo to instead parallelize process, but do he command sequentially
+    \item panoply: software to plot well
+    \item Always think about how to validate your processing or plotting result. It's either the output is wrong (there's something wrong with your methodology) or your current understanding of the expected value is wrong.
+\end{itemize}
+
+\subsection{General workflow example}
+\begin{enumerate}
+    \item Cutout region - sellonlatbox
+    \item Merged in time - mergetime
+    \item June to Sep - selmon
+    \item Time average - timmean
+    \item anomaly - yearmean sub
+    \item Compute weighted area - fldmean
+\end{enumerate}
+
+\end{document}
