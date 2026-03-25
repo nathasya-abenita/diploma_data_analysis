@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "data-analysis"
+version = "0.1.0"
+description = ""
+authors = ["Nathasya Christien <nathasya.abenita@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^2.4.3"
+xarray = "^2026.2.0"
+matplotlib = "^3.10.8"
+cdsapi = "^0.7.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
