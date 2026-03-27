@@ -52,4 +52,36 @@
     \item Compute weighted area - fldmean
 \end{enumerate}
 
+\section{Trend Derivation}
+
+\begin{itemize}
+    \item Let us have sample of data $(x_i, y_i)$ for $i=1,...,n$. We can use these $n$ points to do linear regression. When we have a new point, the slope might change. In this class, we will deal with this certainty.
+    \item Linear model: $y=mx+c$ where
+    \begin{itemize}
+        \item $y$ : dependant variable
+        \item $x$ : independant variable
+        \item $m,c$ : slope and offset
+    \end{itemize}
+    \item One metric is sum of squared errors (SSE): $\sum_i (y_i - (mx_i + c))^2$ where it has a global minimum (convex curve)
+    \item By deriving SSE to $c$, we obtain $\hat{c} = \bar{y} - m\hat{x}$.
+    \item Remember that $\sum_i(y_i - \bar{y}) = 0$ by identity.
+    \item By deriving SSE to $m$ and substitute $\hat{c}$, we obtain
+    \[ \hat{m} = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2}. \]
+    \item Note the numerator. If $x$ and $y$ are linearly dependant, we can see that the values end up to be something very positive or negative. If it's independant to each other (linearly), the values would approximate to zero.
+    \item Uncertainty sources: Measurement error, nonlinearity (for certain range can be linear and non in the other)
+    \item Read GLAM (general linear additive model) which can explain nonlinear relationship by extending predictor variables
+    \item We derived $Var(\hat{m}) = \frac{\sigma^2}{\sum(x_i - \bar{x})^2}$ which explains why variability increases as we increase noise spread or decrease sample data.
+    \item Standard error can be seen as the standard deviation of our slope estimator. It's influenced by residual variance, sample size, and spread of $x_i$. We care more about slope variance.
+    \item We build conf. interval of the slope estimator using t-distribution for small samples and normal distribution for large samples. If the interval does not touch zero, we can say the slope is significance.
+    \item In high latitude, the trend is stronger because of local feedback (melted ice, albedo changes) and heat transport change (in aquaplanet, it's significant towards the poles).
+    \item The trend when we use 1901-2023 (stationary trend?) time series is less prominent than 1970-2023 (nonstationary trend?)
+\end{itemize}
+
+\section{Correlation and Covariance}
+\begin{itemize}
+    \item Larger noise gives larger covariance by trial.
+    \item Covariance's unit is first variable's unit times second variable's unit. Correlation is dimensionless.
+    \item 
+\end{itemize}
+
 \end{document}
