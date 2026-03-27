@@ -4,7 +4,7 @@ dataset = "reanalysis-era5-single-levels-monthly-means"
 request = {
     "product_type": ["monthly_averaged_reanalysis"],
     "variable": ["sea_surface_temperature"],
-    "year": [str(yr) for yr in range (1993, 2026+1)],
+    "year": [str(yr) for yr in range (1950, 2026+1)],
     "month": [
         "01", "02", "03",
         "04", "05", "06",
