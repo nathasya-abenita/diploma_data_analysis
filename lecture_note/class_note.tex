@@ -99,4 +99,31 @@
     \item Reanalysis data has problem because it's a push-pull interaction between model result being fit to observation. It can leave residuals for moisture budget, e.g model is wet but observation really dry
     \item By using segmentation analysis, we are proposing a robust definition for monsoon onset towards noise in our climate data or phenomena.
 \end{itemize}
+
+\section{Fourier Analysis}
+\begin{itemize}
+    \item By eye, we can easily identify the mode in a pattern, but we overlook the weak frequencies.
+    \item FFT can be applied not only to a time series. We can do it in space or even multi-dimensional.
+    \item For square wave, we can expect the first mode to be in phase with the square waves. The next mode will try to adjust the first mode to be flattened.
+    \item Negative frequency can be noted as a clockwise rotation in the complex coordinate. If we're only analyzing a real time series (to find the mode, not the actual power or amplitude), we can neglect the negative frequencies. However, for bivariate analysis or a complex time series, we care for both positive and negative frequencies.
+    \item For real data input, we can the symmetry between positive and negative frequencies so the imaginary part will be cancelled out.
+    \item Convolution: See it as covariance between signal anomalies and a cosine function. If it's weakly correlated, the weight is close to zero which means that particular harmonic wave has a weak weight to the dataset.
+    \item FFT treats our input by extending it to correlate it to a continuous and infinite time series. Thus, input with trend messes with the output. For example, for the first mode, it tries to capture the trend.
+    \item Critical pre-process: 
+    \begin{itemize}
+        \item De-meaning is not really necessary.
+        \item De-trend to ensure starting and ending point start at the same vertical point.
+        \item Tapering to smooth both ends so we can deal with sharp gradients.
+    \end{itemize}
+    \item Hann window is great to deal with leakage (infinitely differential and smooths out edges well), but it's biased towards the middle of the time series. Thus, in climate research, we often use Tukey window that has wider window with 100\%.
+    \item If we feed white noise (e.g numbers from Gaussian distribution) to FFT, we can expect equal power along the spectrum. Whereas for our example with temperature, we have red noise as it is stronger for low periods and and dissipates for higher periods.
+    \item Exercises:
+    \begin{itemize}
+        \item Use other windows for the temperature example
+        \item Put trend in the temperature example
+        \item Apply FFT to ENSO (can we see 7 year cycle?)
+        \item Remember that FFT is based on evenly spaced data, so we have to reinterpolate our data
+    \end{itemize}
+\end{itemize}
+
 \end{document}
