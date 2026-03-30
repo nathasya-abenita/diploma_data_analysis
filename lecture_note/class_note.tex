@@ -81,7 +81,22 @@
 \begin{itemize}
     \item Larger noise gives larger covariance by trial.
     \item Covariance's unit is first variable's unit times second variable's unit. Correlation is dimensionless.
-    \item 
+    \item Proportion Explained = $\frac{SS_{reg}}{SS_{tot}}$
+    \item Notation: $s_x$ is sample standard deviation of $x$
+    \item We proved that $r^2$ (squared of corellation) is the explained variability
+    \item We proved $t$ statistics
+    \[ t = r \sqrt{\frac{n-2}{1-r^2}} \]
+    such that we have to be careful when we have large dataset because it will return a significant statistic
+    \item We need to choose $n-2$ (degree of freedom) that is true. For example, by making autocorrelation of a variable, there's a time window to know its correlation. There's a limit for example after 5*12 months, the temperature time series is not corellated anymore. Thus, the number of independent sample points are actually lower.
 \end{itemize}
 
+\section{Breakpoint Analysis}
+\begin{itemize}
+    \item Offset change with high noise can be unnoticable. Instead, we can look by eye when we have slope change.
+    \item For the Indian region $\partial w / \partial t$ is the local storage of water vapor change. Now, it's negilible. However, by future warming, it will actually be significant and explain the forecast of monsoon onset delay.
+    \item Negative MFC = export of water vapor out the domain. We have descent (dry air dominates) - dry season, less thunderstorm
+    \item When we have positive MFC = divergence and ascent. Because local storage is approximately zero, this translates to higher precipitation.
+    \item Reanalysis data has problem because it's a push-pull interaction between model result being fit to observation. It can leave residuals for moisture budget, e.g model is wet but observation really dry
+    \item By using segmentation analysis, we are proposing a robust definition for monsoon onset towards noise in our climate data or phenomena.
+\end{itemize}
 \end{document}
