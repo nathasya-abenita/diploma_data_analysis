@@ -37,7 +37,7 @@ def analyze_time_series_fft(time_series, time_diff_days, window='none'):
     periods[frequencies == 0] = np.inf  # Period is infinite for zero frequency
 
     # Calculate amplitudes
-    amplitudes = np.abs(fft_result)
+    amplitudes = np.abs(fft_result) / len(time_series)
 
     return frequencies, periods, amplitudes
 
@@ -56,15 +56,15 @@ def plot_fft_spectrum(frequencies, periods, amplitudes):
 
     fig, ax = plt.subplots(figsize=(10, 6))  # Create figure and axes
 
-    ax.plot(periods[positive_freq_indices], amplitudes[positive_freq_indices])
+    ax.plot(periods[positive_freq_indices] / 360, amplitudes[positive_freq_indices])
     # ax.plot(periods, amplitudes)
-    ax.set_xlabel("Period (days)")
-    ax.set_ylabel("Amplitude (log scale)")
+    ax.set_xlabel("Period (years)")
+    ax.set_ylabel("Power")
     ax.set_title("Frequency Spectrum")
     ax.grid(True)
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
     ax.set_xscale('log')
-    ax.set_xlim(365 * 76, 30)
+    ax.set_xlim(100, 0.1)
 
     return fig,ax
 
