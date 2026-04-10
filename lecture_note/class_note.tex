@@ -126,4 +126,18 @@
     \end{itemize}
 \end{itemize}
 
+\section{Wavelets}
+\begin{itemize}
+    \item Fourier can't capture intermittency where signal can occur on certain period intervals.
+    \item To solve this, we create a window that's focused on certain period - snippets of window time. We perform the same analysis where correlate our data with certain harmonic wave.
+    \item It's like doing FFT but adding time dimension. If we take time average of our wavelet map, it's like FFT result.
+    \item $\Omega_0$ spectrum: Using high frequency, makes it closer to the standard FFT because on each time index, they can have strong similarity. If it's small, we're just distorting the amplitude. It work well seperating analysis on each time index, but the frequency becomes wrong.
+    \item The time scale of the wavelet wave length is slightly decreased from the corresponding harmonic wave. Think about the Gaussian envelope enabling a slope that lets peaks happened quicker than what we expect. For high frequency, the shift from the envelope affects less, while it's noticable for small $\omega_0$.
+    \item We chose $\omega_0=6$ if we want to compare with literatures as it's the convention. However, as proved, $2\pi$ is better as we have better value for time scale near to 1, also the Fourier time close to 1.
+    \item Usually our spacing for period bins, we use log intervals, such that we can give more bins to shorter waves.
+    \item Again: Larger omega gives accurate picking frequency, but the time jump is worse. Small omega captures time jump better, but we have frequency leakage.
+    \item Preprocessing data before wavelet: Detrend, remove mean, and take field mean.
+    \item COI basically warns us that we're not performing full analysis by the boundaries of our time series, so we can be more cautious.
+\end{itemize}
+
 \end{document}
