@@ -72,7 +72,12 @@ def get_file(region,var,year):
         file = "era5_p_e_vimd_"+str(year)+"_daysum_NAM_timcumsum.nc"
         url=datadir+file
 
-    path = './data/monsoon/' + file
+    data_dir = './data/monsoon/'
+    if not os.path.exists(data_dir):
+        print(f'creating data directory: {data_dir}')
+        os.mkdir(data_dir)
+
+    path = data_dir + file
 
     if not os.path.exists(path): # only download if it doesn't exist
         print(f'downloading: {file}')
@@ -153,7 +158,8 @@ if __name__ == '__main__':
     dlist=[]
     year_list = range(1987, 2019+1)
 
-    cutoff=250 # cutoff days between onset and cessation
+    cutoff=250 # cutoff days onset
+    cess_start = 160 # cessation days start
     thr = 5 # mm/d
 
     # Iterate over years
@@ -179,12 +185,11 @@ if __name__ == '__main__':
         day_onset,ypred_best,rss = find_changepoint(x[0:cutoff],cmfc[0:cutoff])
 
         # Compute day cessation
-        day_cessation,ypred_best,rss = find_changepoint(x[cutoff:],cmfc[cutoff:])
+        day_cessation,ypred_best,rss = find_changepoint(x[cess_start:],cmfc[cess_start:])
 
         # Compute simple onset with precipitation
         
         day_onset_simple = np.argmax(dlist[0]['data'] > thr)
-        print(day_onset_simple, dlist[0]['data'][day_onset_simple:day_onset_simple + 5])
 
         # Save onset
         onset_list.append(day_onset)
