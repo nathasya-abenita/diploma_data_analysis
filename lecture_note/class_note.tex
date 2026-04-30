@@ -140,4 +140,12 @@
     \item COI basically warns us that we're not performing full analysis by the boundaries of our time series, so we can be more cautious.
 \end{itemize}
 
+\section{Wavenumber Analysis}
+\begin{itemize}
+    \item We use \textbf{spectral leakage} to refer to space ringing, while \textbf{spectral ringing} is for time analysis.
+    \item Leakage or ringing happens because again, FFT relied on periodicity, such that if our data is not periodic in time or space, we will have sudden jump in our idealized wave. New frequencies will be introduced by FFT result.
+    \item Thus, we need to introduce tapering data too for our data in both time and space.
+    \item Usually, we smooth out our 2D FFT result to remove white noise in the background and highlight the peaks. However, there has not been one convential method for this.
+\end{itemize}
+
 \end{document}
