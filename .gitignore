@@ -2,6 +2,7 @@
 *.pdf
 /output
 /data
+.*
 
 # Ignore all LaTeX build artifacts
 *.aux
