@@ -264,18 +264,20 @@ def decorate_return_level_plot (ax, activate_legend=False):
         ax.legend()
     return ax
 
-def plot_confidence_interval (ax, mean_params, ci_lower_params, ci_upper_params, color='tab:blue',
+def plot_confidence_interval (ci_lower_params, ci_upper_params, ax=None, color='tab:blue',
                               label=r'$95\%$ confidence interval', rp_max=1_000):
     # Define return period vector
     T = np.logspace(np.log10(1.01), np.log10(rp_max), 200)
 
+    # Define axis
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+
     # Compute quantile
-    zT_mean = gev_ppf(1 - 1/T, mean_params)
     zT_lower = gev_ppf(1 - 1/T, ci_lower_params)
     zT_upper = gev_ppf(1 - 1/T, ci_upper_params)
 
     # Plot confidence interval
-    ax.plot(T, zT_mean, "-", color=color)
     ax.fill_between(T, zT_lower, zT_upper, 
                     color=color, alpha=0.15, linewidth=0, label=label)
     return ax
@@ -328,7 +330,7 @@ def gev_fit_gmst (data, gmst):
     )
     return result.x
 
-def gev_fit_with_bootstrap_nonparam (x, n_boot=1_000):
+def gev_fit_with_bootstrap (x, n_boot=1_000):
 
     # Define parameter list
     params_array = []
@@ -344,15 +346,9 @@ def gev_fit_with_bootstrap_nonparam (x, n_boot=1_000):
     mean_params = np.mean(params_array, axis=0)
     ci_lower_params, ci_upper_params = np.quantile(params_array, [0.025, 0.975], axis=0)
     
-    return mean_params, ci_lower_params, ci_upper_params
+    return [mean_params, ci_lower_params, ci_upper_params]
 
-def gev_fit_gmst_with_bootstrap_nonparam (x, n_boot=1_000):
-
-    # Define return period vector
-    T = np.logspace(np.log10(1.01), np.log10(1000), 200)
-
-    # Define plot figure and axis
-    fig, ax = plt.subplots()
+def gev_fit_gmst_with_bootstrap (x, gmst, n_boot=1_000):
 
     # Define parameter list
     params_array = []
@@ -360,7 +356,7 @@ def gev_fit_gmst_with_bootstrap_nonparam (x, n_boot=1_000):
     # Resample and fit GEV
     for _ in range (n_boot):
         resample = np.random.choice(x, size=len(x), replace=True)
-        params = gev_fit(resample)
+        params = gev_fit_gmst(resample, gmst)
         params_array.append(params)
     
     # Compute mean parameter estimates and confidence intervals
@@ -368,65 +364,53 @@ def gev_fit_gmst_with_bootstrap_nonparam (x, n_boot=1_000):
     mean_params = np.mean(params_array, axis=0)
     ci_lower_params, ci_upper_params = np.quantile(params_array, [0.025, 0.975], axis=0)
     
-    # Compute quantile
-    zT_mean = gev_ppf(1 - 1/T, mean_params)
-    zT_lower = gev_ppf(1 - 1/T, ci_lower_params)
-    zT_upper = gev_ppf(1 - 1/T, ci_upper_params)
+    return [mean_params, ci_lower_params, ci_upper_params]
 
-    # Plot confidence interval
-    ax.plot(T, zT_mean, "-", color='tab:blue')
-    ax.fill_between(T, zT_lower, zT_upper, 
-                    color='tab:blue', alpha=0.15, linewidth=0)
-    
-    plot_empirical_return_level(x, ax)
-    decorate_return_level_plot(ax)
-    return ax, mean_params, ci_lower_params, ci_upper_params
+# Define model
+def reduce_params(gmst: float, params_hat: list):
+    '''Reduce nonstationary GEV parameters back to stationary GEV'''
+
+    # Update distribution parameters
+    mu0, sigma0, xi, alpha = params_hat
+    mu = mu0 * np.exp(alpha * gmst / mu0)
+    sigma = sigma0 * np.exp(alpha * gmst / mu0)
+    # Prepare output
+    params_hat = [mu, sigma, xi]
+    return params_hat
+
+def transform_obs(tp_list: list, gmst_list: list, chosen_gmst: float, params_nonstat: list):
+    tp_list_out = []
+    for tp, gmst in zip(tp_list, gmst_list):
+        params_hat_current = reduce_params(gmst, params_nonstat)
+        params_hat_target = reduce_params(chosen_gmst, params_nonstat)
+        p = gev_cdf(tp, params_hat_current)
+        tp_new = gev_ppf(p, params_hat_target)
+        tp_list_out.append(tp_new)
+    return tp_list_out
+
+def reduce_bootstrap_parameters(chosen_gmst, bootstrap_params):
+    return [
+        reduce_params(chosen_gmst, params) for params in bootstrap_params
+    ]
 
 if __name__ == '__main__':
     # Example annual maxima
     # data = generate_annual_maxima(100)
     tp, gmst = read_annual_maxima() 
 
-    # Define model
-    def reduce_params(gmst: float, params_hat: list):
-        '''Reduce nonstationary GEV parameters back to stationary GEV'''
-
-        # Update distribution parameters
-        mu0, sigma0, xi, alpha = params_hat
-        mu = mu0 * np.exp(alpha * gmst / mu0)
-        sigma = sigma0 * np.exp(alpha * gmst / mu0)
-        # Prepare output
-        params_hat = [mu, sigma, xi]
-        return params_hat
-    
-    def transform_obs(tp_list: list, gmst_list: list, chosen_gmst: float, params: list):
-        tp_list_out = []
-        for tp, gmst in zip(tp_list, gmst_list):
-            params_hat_current = reduce_params(gmst, params)
-            params_hat_target = reduce_params(chosen_gmst, params)
-            p = gev_cdf(tp, params_hat_current)
-            tp_new = gev_ppf(p, params_hat_target)
-            tp_list_out.append(tp_new)
-        return tp_list_out
-    
-
-    # Fit
-    params_hat_nonstat = gev_fit_gmst(tp, gmst) # mu0, sigma0, xi, alpha
-    print(params_hat_nonstat)
-    mu0, sigma0, xi, alpha = params_hat_nonstat
+    # Fit [mu0, sigma0, xi, alpha]
+    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst) 
 
     #%% Create return level plot
     fig, ax = plt.subplots()
 
     # Present climate
-    params_hat = reduce_params(gmst[-1], params_hat_nonstat)
-    plot_empirical_return_level(transform_obs(tp, gmst, gmst[-1], params_hat_nonstat), ax=ax, color='tab:red')
-    plot_fit_return_level(params_hat, ax=ax, label='present climate', color='tab:red')
-
-    # Counterfactual
-    params_hat = reduce_params(0, params_hat_nonstat)
-    plot_empirical_return_level(transform_obs(tp, gmst, 0, params_hat_nonstat), ax=ax, color='tab:blue')
-    plot_fit_return_level(params_hat, ax=ax, label='counterfactual climate', color='tab:blue')
+    chosen_gmst = gmst[-1]
+    color       = 'tab:red'
+    bootstrap_params_reduced = reduce_bootstrap_parameters(chosen_gmst, bootstrap_params)
+    plot_empirical_return_level(transform_obs(tp, gmst, chosen_gmst, bootstrap_params[0]), ax=ax, color=color)
+    plot_fit_return_level(bootstrap_params_reduced[0], ax=ax, label='present climate', color=color)
+    plot_confidence_interval(bootstrap_params_reduced[1], bootstrap_params_reduced[2], ax=ax, color='tab:red')
 
     # Decorate plot
     decorate_return_level_plot(ax, activate_legend=True)
