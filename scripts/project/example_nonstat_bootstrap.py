@@ -6,7 +6,8 @@ if __name__ == '__main__':
     tp, gmst = read_annual_maxima() 
 
     # Fit [mu0, sigma0, xi, alpha]
-    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst) 
+    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst, n_boot=1000)
+    print(bootstrap_params[0]) 
 
     #%% Create return level plot
     fig, ax = plt.subplots()
