@@ -213,43 +213,46 @@ def plot_qq(x, params, ax=None):
     # 1:1 line
     mn = min(q_fit.min(), x_sorted.min())
     mx = max(q_fit.max(), x_sorted.max())
-    ax.plot([mn, mx], [mn, mx], 'k--')
+    ax.plot([mn, mx], [mn, mx], 'k', alpha=0.8)
 
     # Labels
     ax.set_ylabel("Model")
     ax.set_xlabel("Empirical")
     ax.grid(True)
+
+    # Limits
+    ax.set_xlim(mn, mx)
+    ax.set_ylim(mn, mx)
     return ax
 
-def plot_data_vs_gmst(data: list, gmst: list, ax=None):
-    # scatter: annual maxima vs GMST
+def plot_data_vs_gmst(data: list, gmst: list, ax=None, label=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
-    ax.scatter(gmst, tp, label='Annual maxima', color='k')
+    ax.scatter(gmst, data, label=label, color='k')
     ax.set_xlabel("GMST anomaly")
     ax.set_ylabel("Rx5day")
     
     return ax
 
 def plot_location_vs_gmst(gmst:list, params_nonstat: list, ax=None,
-                          color='tab:red', alpha=1):
+                          color='tab:red', alpha=1, label=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
     gmst_sorted = np.sort(gmst)
     mu_t = update_mu(params_nonstat, gmst_sorted)
-    ax.plot(gmst_sorted, mu_t, alpha=alpha, color=color)
+    ax.plot(gmst_sorted, mu_t, alpha=alpha, color=color, label=label)
     return ax
 
-def plot_location_vs_time(time, gmst, params_nonstat, ax=None):
+def plot_location_vs_time(time, gmst, params_nonstat, ax=None, alpha=1, label=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
-    ax.plot(time, update_mu(params_nonstat, gmst), label='location parameter', color='tab:red')
+    ax.plot(time, update_mu(params_nonstat, gmst), label=label, color='tab:red', alpha=alpha)
     return ax
 
-def plot_data_vs_time(time: list, data: list, ax=None):
+def plot_data_vs_time(time: list, data: list, ax=None, label=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
-    ax.plot(time, data, 'o', label='Rx5day')
+    ax.plot(time, data, 'o', label=label)
     ax.set_xlabel('Year'); ax.set_ylabel('Rx5day (mm)')
     return ax
 
@@ -308,7 +311,7 @@ def plot_confidence_interval (ci_lower_params, ci_upper_params, ax=None, color='
 
     # Plot confidence interval
     ax.fill_between(T, zT_lower, zT_upper, 
-                    color=color, alpha=0.15, linewidth=0, label=label)
+                    color=color, alpha=0.15, linewidth=0)
     return ax
 
 #%% Fittings
