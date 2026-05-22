@@ -162,13 +162,13 @@ def gev_negloglik(params, data):
 #%% General statistical commands
 
 def sort_data(x):
-    x_sorted = np.sort(x)
+    idx = np.argsort(x)          # permutation index
+    x_sorted = x[idx]            # sorted x
 
     n = len(x_sorted)
+    p = np.arange(1, n + 1) / (n + 1)   # Weibull position
 
-    # Weibull position
-    p = np.arange(1, n + 1) / (n + 1)
-    return x_sorted, p
+    return x_sorted, p, idx
 
 def gev_cdf(z, params):
     mu, sigma, xi = params
@@ -198,10 +198,46 @@ def gev_ppf(p, params):
 def plot_qq(x, params, ax=None):
 
     # Sort data and compute probability
-    x_sorted, p = sort_data(x)
+    x_sorted, p, _ = sort_data(x)
 
     # Fitted quantiles
     q_fit = gev_ppf(p, params)
+
+    # Prepare axis
+    if ax == None:
+        _, ax = plt.subplots(figsize=(6,6))
+
+    # Add quantile points
+    ax.scatter(x_sorted, q_fit)
+
+    # 1:1 line
+    mn = min(q_fit.min(), x_sorted.min())
+    mx = max(q_fit.max(), x_sorted.max())
+    ax.plot([mn, mx], [mn, mx], 'k', alpha=0.8)
+
+    # Labels
+    ax.set_ylabel("Model")
+    ax.set_xlabel("Empirical")
+    ax.grid(True)
+
+    # Limits
+    ax.set_xlim(mn, mx)
+    ax.set_ylim(mn, mx)
+    return ax
+
+def plot_qq_nonstat(x, gmst, params_nonstat, ax=None):
+
+    # Sort data and compute probability
+    x_sorted, p_sorted, idxs = sort_data(x)
+    gmst_sorted = gmst[idxs]
+
+    # Fitted quantiles
+    q_fit = []
+    for p, t in zip(p_sorted, gmst_sorted):
+        params = reduce_params(t, params_nonstat)
+        q = gev_ppf(p, params)
+        q_fit.append(q)
+    q_fit = np.array(q_fit)
 
     # Prepare axis
     if ax == None:
@@ -276,7 +312,7 @@ def plot_empirical_return_level (x, ax=None, label=None, color='tab:blue',
                                  alpha=1, marker='o'):
 
     # Sort data and find empirical return periods
-    x_sorted, p = sort_data(x)
+    x_sorted, p, _ = sort_data(x)
     T_emp = 1 / (1 - p)
 
     if ax == None:
