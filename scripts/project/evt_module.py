@@ -79,8 +79,8 @@ def gev_negloglik_gmst(params, data, gmst):
     mu0, sigma0, xi, alpha = params
 
     # Apply model
-    mu = mu0 * np.exp(alpha * gmst / mu0)
-    sigma = sigma0 * np.exp(alpha * gmst / mu0)
+    mu = update_mu(params, gmst)
+    sigma = update_sigma(params, gmst)
 
     # Scale parameter must be positive
     if np.any(sigma <= 0):
@@ -92,8 +92,6 @@ def gev_negloglik_gmst(params, data, gmst):
     # GEV support condition
     if np.any(t <= 0):
         return np.inf
-
-    n = len(data)
 
     # Gumbel limit case
     if np.abs(xi) < 1e-6:
@@ -223,6 +221,37 @@ def plot_qq(x, params, ax=None):
     ax.grid(True)
     return ax
 
+def plot_data_vs_gmst(data: list, gmst: list, ax=None):
+    # scatter: annual maxima vs GMST
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+    ax.scatter(gmst, tp, label='Annual maxima', color='k')
+    ax.set_xlabel("GMST anomaly")
+    ax.set_ylabel("Rx5day")
+    
+    return ax
+
+def plot_location_vs_gmst(gmst:list, params_nonstat: list, ax=None,
+                          color='tab:red', alpha=1):
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+    gmst_sorted = np.sort(gmst)
+    mu_t = update_mu(params_nonstat, gmst_sorted)
+    ax.plot(gmst_sorted, mu_t, alpha=alpha, color=color)
+    return ax
+
+def plot_location_vs_time(time, gmst, params_nonstat, ax=None):
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+    ax.plot(time, update_mu(params_nonstat, gmst), label='location parameter', color='tab:red')
+    return ax
+
+def plot_data_vs_time(time: list, data: list, ax=None):
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+    ax.plot(time, data, 'o', label='Rx5day')
+    ax.set_xlabel('Year'); ax.set_ylabel('Rx5day (mm)')
+    return ax
 
 def plot_fit_return_level (params, ax=None, label=None, color='tab:blue', rp_max=1_000):
 
@@ -298,7 +327,7 @@ def gev_fit (data):
         args=(data,),
         # method="L-BFGS-B",
         bounds=[
-            (None, None),   # mu
+            (0, 500),   # mu
             (1e-6, None),   # sigma > 0
             (-0.5, 1)         # xi bounds
         ]
@@ -311,21 +340,20 @@ def gev_fit_gmst (data, gmst):
     # Initial guesses
     mu0 = np.mean(data)
     sigma0 = np.std(data)
-    xi0 = -0.1
-    alpha0 = 0.1
+    xi0 = 0
+    alpha0 = 0.5
     initial = [mu0, sigma0, xi0, alpha0]
 
     # Perform Maximum Likelihood Estimation
     result = minimize(
         gev_negloglik_gmst,
         initial,
-        args=(data, gmst,),
-        # method="L-BFGS-B",
+        args=(data, gmst,),# method='Powell',
         bounds=[
-            (None, None),   # mu0
+            (1e-6, 500),   # mu0
             (1e-6, None),   # sigma0 > 0
             (-0.5, 1),      # xi bounds
-            (None, None)    # alpha
+            (-5, 10)    # alpha
         ]
     )
     return result.x
@@ -348,15 +376,17 @@ def gev_fit_with_bootstrap (x, n_boot=1_000):
     
     return [mean_params, ci_lower_params, ci_upper_params]
 
-def gev_fit_gmst_with_bootstrap (x, gmst, n_boot=1_000):
+def gev_fit_gmst_with_bootstrap (x: list, gmst: list, n_boot=1_000):
 
     # Define parameter list
     params_array = []
 
     # Resample and fit GEV
     for _ in range (n_boot):
-        resample = np.random.choice(x, size=len(x), replace=True)
-        params = gev_fit_gmst(resample, gmst)
+        idx = np.random.choice(len(x), size=len(x), replace=True)
+        x_boot = x[idx]
+        gmst_boot = gmst[idx]
+        params = gev_fit_gmst(x_boot, gmst_boot)
         params_array.append(params)
     
     # Compute mean parameter estimates and confidence intervals
@@ -366,14 +396,24 @@ def gev_fit_gmst_with_bootstrap (x, gmst, n_boot=1_000):
     
     return [mean_params, ci_lower_params, ci_upper_params]
 
+#%% Non-Stationary Fit Settings
+
 # Define model
+def update_mu(params_nonstat: list, gmst):
+    mu0, _, _, alpha = params_nonstat
+    return mu0 * np.exp(alpha * gmst)
+
+def update_sigma(params_nonstat: list, gmst):
+    mu0, sigma0, _, alpha = params_nonstat
+    return sigma0 * np.exp(alpha * gmst)
+
 def reduce_params(gmst: float, params_hat: list):
     '''Reduce nonstationary GEV parameters back to stationary GEV'''
 
     # Update distribution parameters
-    mu0, sigma0, xi, alpha = params_hat
-    mu = mu0 * np.exp(alpha * gmst / mu0)
-    sigma = sigma0 * np.exp(alpha * gmst / mu0)
+    _, _, xi, _ = params_hat
+    mu = update_mu(params_hat, gmst)
+    sigma = update_sigma(params_hat, gmst)
     # Prepare output
     params_hat = [mu, sigma, xi]
     return params_hat
@@ -393,27 +433,57 @@ def reduce_bootstrap_parameters(chosen_gmst, bootstrap_params):
         reduce_params(chosen_gmst, params) for params in bootstrap_params
     ]
 
+def find_event(gmst_list: list, rp: float, params_nonstat: list):
+    tp_list_out = []
+    for gmst in  gmst_list:
+        params_hat_current = reduce_params(gmst, params_nonstat)
+        tp_new = gev_ppf(1 - 1/rp, params_hat_current)
+        tp_list_out.append(tp_new)
+    return tp_list_out
+
+# if __name__ == '__main__':
+#     # Example annual maxima
+#     # data = generate_annual_maxima(100)
+#     tp, gmst = read_annual_maxima() 
+#     year = np.arange(len(tp))
+
+#     # Fit [mu0, sigma0, xi, alpha]
+#     bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst, n_boot=1000) 
+#     print(bootstrap_params)
+#     # Plot time series
+#     plt.plot(year, tp, 'o')
+
+#     # Plot location parameter
+#     plt.plot(year, update_mu(bootstrap_params[0], gmst), label='location parameter', color='tab:red')
+#     plt.plot(year, update_mu(bootstrap_params[1], gmst), alpha=0.5, color='tab:red')
+#     plt.plot(year, update_mu(bootstrap_params[2], gmst), alpha=0.5, color='tab:red')
+#     # Plot return level
+#     plt.plot(year, find_event(gmst, 5, bootstrap_params[0]), label='5-year event')
+#     plt.plot(year, find_event(gmst, 100, bootstrap_params[0]), label='100-year event')
+#     # Plot all
+#     plt.legend()
+#     plt.show()
+
 if __name__ == '__main__':
-    # Example annual maxima
-    # data = generate_annual_maxima(100)
-    tp, gmst = read_annual_maxima() 
 
-    # Fit [mu0, sigma0, xi, alpha]
-    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst) 
+    tp, gmst = read_annual_maxima()
+    year = np.arange(len(tp))
 
-    #%% Create return level plot
-    fig, ax = plt.subplots()
+    # Fit + bootstrap
+    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst, n_boot=1000)
+    print(bootstrap_params)
 
-    # Present climate
-    chosen_gmst = gmst[-1]
-    color       = 'tab:red'
-    bootstrap_params_reduced = reduce_bootstrap_parameters(chosen_gmst, bootstrap_params)
-    plot_empirical_return_level(transform_obs(tp, gmst, chosen_gmst, bootstrap_params[0]), ax=ax, color=color)
-    plot_fit_return_level(bootstrap_params_reduced[0], ax=ax, label='present climate', color=color)
-    plot_confidence_interval(bootstrap_params_reduced[1], bootstrap_params_reduced[2], ax=ax, color='tab:red')
+    # scatter: annual maxima vs GMST
+    plt.figure()
+    plt.scatter(gmst, tp, label='Annual maxima', color='k')
 
-    # Decorate plot
-    decorate_return_level_plot(ax, activate_legend=True)
+    # plot fitted location curves (bootstrap ensemble)
+    gmst_sorted = np.sort(gmst)
 
-    # Plot all
+    for params in bootstrap_params:  # plot subset for clarity
+        mu_t = update_mu(params, gmst_sorted)
+        plt.plot(gmst_sorted, mu_t, alpha=0.1, color='tab:red')
+
+    plt.xlabel("GMST anomaly")
+    plt.ylabel("Rx5day")
     plt.show()
