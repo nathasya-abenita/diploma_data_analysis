@@ -29,7 +29,8 @@
 }
 
 \institute{
-    Numerical Methods and Data Analysis for Geoscience, \\
+    Numerical Methods and Data Analysis for Geoscience Course \\
+    Earth System Physics Section \\
     ICTP}
 \date{\today}
 
@@ -44,7 +45,10 @@
 }
 \addtocounter{framenumber}{-1}
 
+
+
 \section{Introduction}
+
 \begin{frame}
 \begin{itemize}
     \item At the end of November 2025, Sumatra was devastated by exceptional monsoon rains and a rare tropical storm by Cyclone Senyar.
@@ -58,8 +62,175 @@
 \end{itemize}
 \end{frame}
 
+\section{Data Preparation}
 
-% \begin{frame}[allowframebreaks]{References}
-%     \printbibliography
-% \end{frame}
+\subsection{Event Domain}
+\begin{frame}
+    \centering
+    We focus in this region. Daily total precipitation from ERA5 (1940--2025) has been downloaded.
+
+    \includegraphics[width=0.7\textwidth]{../../output/project/domain.png}
+\end{frame}
+
+\subsection{Data Pre-Processing}
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+    \begin{itemize}
+        \item We will use area-averaged \textbf{Rx5day} (annual maxima of 5-day precipitation).
+        
+        \begin{block}{Rx5day Computation Example}
+            \texttt{cdo fldmean out.nc in.nc} \\
+            \texttt{cdo -yearmax -runsum,5 out.nc rx5day.nc}
+        \end{block}
+
+        \medskip
+        \item It is interesting to also compare this data with (low-pass filtered) \textbf{global mean surface temperature (GMST)} anomalies relative to 1951-1980 \citep{gstchange,gistemp}.
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \centering
+    \vspace{-1.6cm}
+    \includegraphics[width=0.8\textwidth]{../../output/project/ts.png}
+    \end{columns}
+\end{frame}
+
+\section{What Is An Extreme Event?}
+
+\subsection{Defining emipirical return levels}
+\begin{frame}
+    \begin{itemize}
+        \item Engineers and policy makers tend to use something called the $X$-year event. For example, the new drainage system can stand a 50-year rainfall.
+        \begin{definition}[Return Level]
+            The terminology $X$-year return level means a value that is expected \textbf{to be exceeded} exactly once in the next $X$ years.
+        \end{definition}
+
+        \item Another example: The 100-year event has a 1\% change of happening each year, meaning you expect to see at least one 100-year event every 100 years.
+        \item Empirically, we can derive this from observation.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{definition}[Empirical Return Level]
+            Let $Z$ denotes the distribution of Rx5day annual maxima. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ data is
+            \[
+            P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
+            \]
+            which corresponds to the the return year of $1/P(Z > z_{(i)})$.
+        \end{definition}
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{../../output/project/empirical_return_level.png}
+        \vspace{0.2cm}
+        {\scriptsize Empirical return level applied to Rx5day}
+    \end{columns}
+\end{frame}
+
+\subsection{Uncertainty in empirical return level}
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{itemize}
+            \item A small change in the data series can have large consequences for the computation of return levels and return periods.
+            \item For example, let's say we replace the recent extreme event in 2025 (the highest record) with a "common" annual maxima.
+            \item Note that it's becoming uncertain to estimate the 100-year event by comparing both plots.
+        \end{itemize}
+
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{../../output/project/empirical_return_level_alt.png}
+        \vspace{0.2cm}
+        {\scriptsize Empirical return level applied to altered Rx5day, using median annual maxima}
+    \end{columns}    
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{itemize}
+            \item We can use bootstrapping method--\textit{"pulling oneself up by one's bootstraps"}.
+            \item This method works by assuming that while we have limited data, the data that we do have is nevertheless a representative sample of possible events.
+            \item We use the data as a distribution to resample from, and compute uncertainties using those.
+            \item By resampling data from our observation, we also call this \textbf{non-parametric bootstrap} method.
+        \end{itemize}
+
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{../../output/project/bootstrap_demo.png}
+        \vspace{0.2cm}
+        {\scriptsize Empirical return level applied to Rx5day and its resampled dataset}
+    \end{columns}    
+\end{frame}
+
+\section{Stationary Analysis}
+
+\subsection{Generalized extreme value (GEV) distribution}
+\begin{frame}
+    \begin{itemize}
+        \item Extreme Value Theory (EVT) is the statistical study of extreme deviations, e.g 100-year flood events.
+        \item The classical Extreme Value Theory approach is to study the statistics of *block maxima*
+        \[M_n = \max (X_1, \ldots, X_n)\]
+        where $X_i$ are stationary random variables with a common distrubtion function $F$.
+        \item Stationary represents means that there's a weak dependence in a consecutive event.
+        \item Stationary analysis also means that the distribution parameters do not change in time.
+    \end{itemize}
+\end{frame}
+
+\subsection{Maximum likelihood estimation}
+\begin{frame}
+    \begin{itemize}
+        \item Under the assumption that $Z_1, ..., Z_m$ are independent variables having the GEV distribution, the log-likelihood for the GEV parameters when $\xi \neq 0$ is
+        \[
+        \ell(\mu,\sigma,\xi)=
+        \begin{cases}
+        \displaystyle
+        -m\log\sigma
+        -\left(1+\frac{1}{\xi}\right)
+        \sum_{i=1}^m
+        \log\!\left[1+\xi\left(\frac{z_i-\mu}{\sigma}\right)\right]
+        % \\[1.2em]
+        % \displaystyle\qquad
+        -\sum_{i=1}^m
+        \left[1+\xi\left(\frac{z_i-\mu}{\sigma}\right)\right]^{-1/\xi},
+        & \xi\neq 0,
+        \\[2em]
+        \displaystyle
+        -m\log\sigma
+        -\sum_{i=1}^m
+        \left(\frac{z_i-\mu}{\sigma}\right)
+        -\sum_{i=1}^m
+        \exp\!\left\{
+        -\left(\frac{z_i-\mu}{\sigma}\right)
+        \right\},
+        & \xi=0,
+        \end{cases}
+        \]
+        subject to
+        \[
+        1+\xi\left(\frac{z_i-\mu}{\sigma}\right)>0,
+        \qquad i=1,\dots,m.
+        \]
+        \item We define estimated distribution parameters, $\hat{\mu}, \hat{\sigma}, \hat{\xi}$, as the solution to maximize $\ell(\mu, \sigma, \xi)$ given their respective domain.
+        \item Here, I used \texttt{scipy.minimize} method to solve this numerically.
+    \end{itemize}
+\end{frame}
+
+\section{Non-Stationary Analysis}
+
+\section{Remarks}
+
+\section{Acknowledgement}
+\begin{frame}
+\begin{itemize}
+    \item Theory regarding EVT follows the classic textbook by \citet{coles2001}.
+    \item Material on non-parametric bootstrap method follows a helpful notebook from \href{https://comptools.climatematch.io/tutorials/W2D3_ExtremesandVariability/student/W2D3_Tutorial2.html}{Climatematch}.
+    \item Trend detection follows the work of \textbf{World Weather Attribution} to the same event \citep{wwa} and its protocol for probabilistic attribution study \citep{philip2020protocol}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+    \printbibliography
+\end{frame}
 \end{document}
