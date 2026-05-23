@@ -265,8 +265,8 @@ def plot_data_vs_gmst(data: list, gmst: list, ax=None, label=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
     ax.scatter(gmst, data, label=label, color='k')
-    ax.set_xlabel("GMST anomaly")
-    ax.set_ylabel("Rx5day")
+    ax.set_xlabel("GMST anomaly (K)")
+    ax.set_ylabel("Rx5day (mm)")
     
     return ax
 
@@ -333,7 +333,7 @@ def decorate_return_level_plot (ax, activate_legend=False):
     return ax
 
 def plot_confidence_interval (ci_lower_params, ci_upper_params, ax=None, color='tab:blue',
-                              label=r'$95\%$ confidence interval', rp_max=1_000):
+                              label=None, rp_max=1_000):
     # Define return period vector
     T = np.logspace(np.log10(1.01), np.log10(rp_max), 200)
 
@@ -347,7 +347,24 @@ def plot_confidence_interval (ci_lower_params, ci_upper_params, ax=None, color='
 
     # Plot confidence interval
     ax.fill_between(T, zT_lower, zT_upper, 
-                    color=color, alpha=0.15, linewidth=0)
+                    color=color, alpha=0.15, linewidth=0, label=label)
+    return ax
+
+def plot_return_level_nonstat(data: list, gmst: list, chosen_gmst: float, params_nonstat: list, 
+                              ax=None, color=None, label=None, rp_max=1e5):
+    if ax == None:
+        _, ax = plt.subplots(figsize=(7,5))
+
+    params_hat = reduce_params(chosen_gmst, params_nonstat)
+    transformed_obs = transform_obs(data, gmst, chosen_gmst, params_nonstat)
+    plot_empirical_return_level(transformed_obs, ax=ax, color=color)
+    plot_fit_return_level(params_hat, ax=ax, label=label, color=color, rp_max=rp_max)
+    return ax
+
+def plot_confidence_interval_nonstat(bootstrap_params: list, chosen_gmst: float, color=None, 
+                                     ax=None, label=None, rp_max=1e5):
+    bootstrap_params_reduced = reduce_bootstrap_parameters(chosen_gmst, bootstrap_params)
+    plot_confidence_interval(bootstrap_params_reduced[1], bootstrap_params_reduced[2], ax=ax, color=color, rp_max=rp_max, label=label)
     return ax
 
 #%% Fittings
@@ -437,14 +454,36 @@ def gev_fit_gmst_with_bootstrap (x: list, gmst: list, n_boot=1_000):
 
 #%% Non-Stationary Fit Settings
 
-# Define model
+# [MODEL DEPENDANT] Define model
 def update_mu(params_nonstat: list, gmst):
-    mu0, _, _, alpha = params_nonstat
+    mu0, sigma0, xi, alpha = params_nonstat
     return mu0 * np.exp(alpha * gmst)
 
 def update_sigma(params_nonstat: list, gmst):
-    mu0, sigma0, _, alpha = params_nonstat
+    mu0, sigma0, xi, alpha  = params_nonstat
     return sigma0 * np.exp(alpha * gmst)
+
+def compute_magnitude_change(params_nonstat: list, gmst1: float, gmst2: float):
+    mu0, sigma0, xi, alpha = params_nonstat
+    
+    return np.exp( alpha * (gmst2 - gmst1)) - 1
+
+def compute_probability_change(params_nonstat: list, tp: float, gmst1: float, gmst2: float):
+    mu0, sigma0, xi, alpha = params_nonstat
+
+    # Distribution 1
+    mu = update_mu(params_nonstat, gmst1)
+    sigma = update_sigma(params_nonstat, gmst1)
+    p1 = gev_cdf(tp, [mu, sigma, xi])
+
+    # Distribution 2
+    mu = update_mu(params_nonstat, gmst2)
+    sigma = update_sigma(params_nonstat, gmst2)
+    p2 = gev_cdf(tp, [mu, sigma, xi])
+    
+    return (1-p2)/(1-p1)
+
+# Handling data in non-stationary manner
 
 def reduce_params(gmst: float, params_hat: list):
     '''Reduce nonstationary GEV parameters back to stationary GEV'''
@@ -465,7 +504,7 @@ def transform_obs(tp_list: list, gmst_list: list, chosen_gmst: float, params_non
         p = gev_cdf(tp, params_hat_current)
         tp_new = gev_ppf(p, params_hat_target)
         tp_list_out.append(tp_new)
-    return tp_list_out
+    return np.array(tp_list_out)
 
 def reduce_bootstrap_parameters(chosen_gmst, bootstrap_params):
     return [
