@@ -1,0 +1,65 @@
+% Copyright (c) 2022 by Lars Spreng
+% This work is licensed under the Creative Commons Attribution 4.0 International License. 
+% To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% You can add your packages and commands to the loadslides.tex file. 
+% The files in the folder "styles" can be modified to change the layout and design of your slides.
+% I have included examples on how to use the template below. 
+% Some of these examples are taken from the Metropolis template.
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+\documentclass[
+11pt,notheorems,hyperref={pdfauthor=whatever}
+]{beamer}
+
+\input{loadslides.tex} % Loads packages and some defined commands
+
+\title[
+% Text entered here will appear in the bottom middle
+]{Trend Detection for Extreme Precipitation}
+
+\subtitle{Study case to 2025 flash floods in Sumatra, Indonesia}
+
+\author[
+% Text entered here will appear in the bottom left corner
+]{
+    Nathasya Christien 
+}
+
+\institute{
+    Numerical Methods and Data Analysis for Geoscience, \\
+    ICTP}
+\date{\today}
+
+\begin{document}
+
+% Generate title page
+{
+\setbeamertemplate{footline}{} 
+\begin{frame}
+  \titlepage
+\end{frame}
+}
+\addtocounter{framenumber}{-1}
+
+\section{Introduction}
+\begin{frame}
+\begin{itemize}
+    \item At the end of November 2025, Sumatra was devastated by exceptional monsoon rains and a rare tropical storm by Cyclone Senyar.
+    \item This triggers massive flooding, flash floods, and widespread landslides across provinces with more than 3.2–3.3 million people have been affected. 
+    \item Arising questions:
+    
+    \begin{enumerate}
+        \item Is such an extreme event statistically to happen once in a while?
+        \item Is this an indication of a changing climate
+    \end{enumerate}
+\end{itemize}
+\end{frame}
+
+
+% \begin{frame}[allowframebreaks]{References}
+%     \printbibliography
+% \end{frame}
+\end{document}
