@@ -46,7 +46,7 @@ event_lat_min, event_lat_max = 0, 5
 
 # Plotting extent
 plot_lon_min, plot_lon_max = 90, 110
-plot_lat_min, plot_lat_max = -8, 8
+plot_lat_min, plot_lat_max = -3, 8
 
 # Time range
 time_start = "2025-11-23"
