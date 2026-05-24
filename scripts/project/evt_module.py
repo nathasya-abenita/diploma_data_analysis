@@ -227,38 +227,56 @@ def plot_qq(x, params, ax=None):
 
 def plot_qq_nonstat(x, gmst, params_nonstat, ax=None):
 
-    # Sort data and compute probability
-    x_sorted, p_sorted, idxs = sort_data(x)
-    gmst_sorted = gmst[idxs]
+    # Compute Gumbel residuals
+    residuals = []
 
-    # Fitted quantiles
-    q_fit = []
-    for p, t in zip(p_sorted, gmst_sorted):
-        params = reduce_params(t, params_nonstat)
-        q = gev_ppf(p, params)
-        q_fit.append(q)
-    q_fit = np.array(q_fit)
+    for x_i, t_i in zip(x, gmst):
+
+        # Nonstationary parameters at covariate value t_i
+        params = reduce_params(t_i, params_nonstat)
+
+        # Probability of observation under fitted model
+        u_i = gev_cdf(x_i, params)
+
+        # Avoid numerical issues at 0 or 1
+        u_i = np.clip(u_i, 1e-10, 1 - 1e-10)
+
+        # Standard Gumbel residual
+        y_i = -np.log(-np.log(u_i))
+
+        residuals.append(y_i)
+
+    residuals = np.array(residuals)
+
+    # Sort residuals
+    residuals_sorted = np.sort(residuals)
+
+    # Theoretical standard Gumbel quantiles
+    n = len(residuals_sorted)
+    p = (np.arange(1, n + 1) - 0.5) / n
+    q_theory = -np.log(-np.log(p))
 
     # Prepare axis
-    if ax == None:
-        _, ax = plt.subplots(figsize=(6,6))
+    if ax is None:
+        _, ax = plt.subplots(figsize=(6, 6))
 
-    # Add quantile points
-    ax.scatter(x_sorted, q_fit)
+    # QQ points
+    ax.scatter(q_theory, residuals_sorted)
 
     # 1:1 line
-    mn = min(q_fit.min(), x_sorted.min())
-    mx = max(q_fit.max(), x_sorted.max())
+    mn = min(q_theory.min(), residuals_sorted.min())
+    mx = max(q_theory.max(), residuals_sorted.max())
     ax.plot([mn, mx], [mn, mx], 'k', alpha=0.8)
 
     # Labels
-    ax.set_ylabel("Model")
-    ax.set_xlabel("Empirical")
+    ax.set_xlabel("Theoretical standard Gumbel quantiles")
+    ax.set_ylabel("Residual quantiles")
     ax.grid(True)
 
     # Limits
     ax.set_xlim(mn, mx)
     ax.set_ylim(mn, mx)
+
     return ax
 
 def plot_data_vs_gmst(data: list, gmst: list, ax=None, label=None):
@@ -519,49 +537,17 @@ def find_event(gmst_list: list, rp: float, params_nonstat: list):
         tp_list_out.append(tp_new)
     return tp_list_out
 
-# if __name__ == '__main__':
-#     # Example annual maxima
-#     # data = generate_annual_maxima(100)
-#     tp, gmst = read_annual_maxima() 
-#     year = np.arange(len(tp))
-
-#     # Fit [mu0, sigma0, xi, alpha]
-#     bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst, n_boot=1000) 
-#     print(bootstrap_params)
-#     # Plot time series
-#     plt.plot(year, tp, 'o')
-
-#     # Plot location parameter
-#     plt.plot(year, update_mu(bootstrap_params[0], gmst), label='location parameter', color='tab:red')
-#     plt.plot(year, update_mu(bootstrap_params[1], gmst), alpha=0.5, color='tab:red')
-#     plt.plot(year, update_mu(bootstrap_params[2], gmst), alpha=0.5, color='tab:red')
-#     # Plot return level
-#     plt.plot(year, find_event(gmst, 5, bootstrap_params[0]), label='5-year event')
-#     plt.plot(year, find_event(gmst, 100, bootstrap_params[0]), label='100-year event')
-#     # Plot all
-#     plt.legend()
-#     plt.show()
-
 if __name__ == '__main__':
-
-    tp, gmst = read_annual_maxima()
+    # Example annual maxima
+    # data = generate_annual_maxima(100)
+    tp, gmst = read_annual_maxima() 
     year = np.arange(len(tp))
 
-    # Fit + bootstrap
-    bootstrap_params = gev_fit_gmst_with_bootstrap(tp, gmst, n_boot=1000)
-    print(bootstrap_params)
+    # Fit
+    params_hat_nonstat = gev_fit_gmst(tp, gmst) # mu0, sigma0, xi, alpha
+    print(params_hat_nonstat)
+    mu0, sigma0, xi, alpha = params_hat_nonstat
 
-    # scatter: annual maxima vs GMST
-    plt.figure()
-    plt.scatter(gmst, tp, label='Annual maxima', color='k')
-
-    # plot fitted location curves (bootstrap ensemble)
-    gmst_sorted = np.sort(gmst)
-
-    for params in bootstrap_params:  # plot subset for clarity
-        mu_t = update_mu(params, gmst_sorted)
-        plt.plot(gmst_sorted, mu_t, alpha=0.1, color='tab:red')
-
-    plt.xlabel("GMST anomaly")
-    plt.ylabel("Rx5day")
+    # Plot QQ
+    plot_qq_nonstat(tp, gmst, params_hat_nonstat)
     plt.show()
