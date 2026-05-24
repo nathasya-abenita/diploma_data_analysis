@@ -3,6 +3,23 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
+def load_best_track_data(nc_file):
+    """Load best track data."""
+
+    # Read file
+    ds = xr.open_dataset(nc_file)
+
+    # Select storm, saved as DataFrame
+    storm_id = 295 # Storm Senyar ID
+    ds_sel = ds.sel(storm=storm_id)
+    df = ds_sel[['lat', 'lon', 'usa_wind', 'usa_pres']].to_dataframe().dropna()
+
+    # Clean DataFrame
+    df = df.reset_index(drop=True)
+    df['time'] = df['time'].dt.round('s')
+    df = df.rename(columns={'usa_wind': 'wind', 'usa_pres': 'min_pressure'})
+    return df[::2]
+
 # Create figure with 1 row and 3 columns
 font_size = 12
 plt.rcParams.update({
@@ -15,6 +32,10 @@ plt.rcParams.update({
 })
 
 #%% USER INPUT
+
+# Track file
+trackfile = './data/IBTrACS.last3years.v04r01.nc'
+df = load_best_track_data(trackfile)
 
 # ERA5 file
 ncfile = "./data/era5_daily_tp/tp_daily_Senyar.nc"
@@ -72,6 +93,7 @@ pcm = ax.pcolormesh(
     vmax=500
 )
 
+
 # MASK OCEAN WITH WHITE
 
 ax.add_feature(
@@ -99,6 +121,10 @@ ax.add_feature(
     linestyle=":",
     zorder=4
 )
+
+# CYCLONE TRACK
+ax.plot(df['lon'], df['lat'], '--', color='k', label='Cyclone Track')
+
 
 # EVENT BOX
 
