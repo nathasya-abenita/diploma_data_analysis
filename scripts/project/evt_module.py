@@ -5,6 +5,8 @@ from scipy.optimize import minimize
 from scipy.stats import genextreme, skew
 import matplotlib.pyplot as plt
 
+np.random.seed(42) # set seed for reproducibility
+
 #%% Data generator
 
 def read_annual_maxima():
@@ -279,10 +281,10 @@ def plot_qq_nonstat(x, gmst, params_nonstat, ax=None):
 
     return ax
 
-def plot_data_vs_gmst(data: list, gmst: list, ax=None, label=None):
+def plot_data_vs_gmst(data: list, gmst: list, ax=None, label=None, color=None):
     if ax == None:
         _, ax = plt.subplots(figsize=(7,5))
-    ax.scatter(gmst, data, label=label, color='k')
+    ax.scatter(gmst, data, label=label, color=color)
     ax.set_xlabel("GMST anomaly (K)")
     ax.set_ylabel("Rx5day (mm)")
     

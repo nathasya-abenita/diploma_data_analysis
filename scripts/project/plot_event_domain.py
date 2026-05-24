@@ -123,7 +123,7 @@ ax.add_feature(
 )
 
 # CYCLONE TRACK
-ax.plot(df['lon'], df['lat'], '--', color='k', label='Cyclone Track')
+ax.plot(df['lon'], df['lat'], '--', color='k', label='cyclone track')
 
 
 # EVENT BOX
@@ -145,7 +145,7 @@ ax.plot(
     ],
     color="red",
     linewidth=2.5,
-    label="Defined event",
+    label="defined event",
     transform=ccrs.PlateCarree(),
     zorder=5
 )

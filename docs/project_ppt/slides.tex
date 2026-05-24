@@ -29,7 +29,7 @@
 }
 
 \institute{
-    Numerical Methods and Data Analysis for Geoscience Course \\
+    Numerical Methods and Data Analysis in Geoscience Course \\
     Earth System Physics Section \\
     ICTP}
 \date{\today}
@@ -211,10 +211,13 @@
     \end{block}
 \end{frame}
 
-\subsection{Maximum likelihood estimation}
+\subsection{Maximum likelihood estimation (MLE)}
 \begin{frame}
     \begin{itemize}
-        \item Under the assumption that $Z_1, ..., Z_m$ are independent variables having the GEV distribution, the log-likelihood for the GEV parameters when $\xi \neq 0$ is
+        \item The principle of MLE is to choose the model with greatest likelihood. Assume that $Z_1, ..., Z_m$ are independent variables having the GEV distribution. The likelihood function is
+        \[ \ell(\mu, \sigma, \xi) = \prod_{i=1}^m P(\mu, \sigma, \xi \vert z_1, ..., z_m) \]
+        given independent realizations of $z_1, ..., z_m$. \pause
+        \item The log-likelihood for the GEV parameters is
         \[
         \ell(\mu,\sigma,\xi)=
         \begin{cases}
@@ -240,11 +243,8 @@
         & \xi=0,
         \end{cases}
         \]
-        subject to
-        \[
-        1+\xi\left(\frac{z_i-\mu}{\sigma}\right)>0,
-        \qquad i=1,\dots,m.
-        \]
+        subject to $1+\xi \left[ (z_i-\mu)/\sigma \right]>0, i=1,\dots,m.$
+        \pause
         \item We define estimated distribution parameters, $\hat{\mu}, \hat{\sigma}, \hat{\xi}$, as the solution to maximize $\ell(\mu, \sigma, \xi)$ given their respective domain.
         \item Here, I used \texttt{scipy.minimize} method to solve this numerically.
     \end{itemize}
@@ -299,7 +299,7 @@
     \end{itemize}
 
     \begin{columns}[T,onlytextwidth]
-    \column{0.45\textwidth}
+    \column{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{../figs/result_ts.png}
 
@@ -389,9 +389,9 @@
 \subsection{Remarks}
 \begin{frame}
     \begin{itemize}
-        \item The nonparametric bootstrap should be interpreted with caution as it underestimates the real uncertainties involved in the frequency models \citep{kysely2008}.
+        \item The non-parametric bootstrap should be interpreted with caution as it underestimates the real uncertainties involved in the frequency models \citep{kysely2008}.
         \item We can expand the non-stationary model to include climate variability, e.g ENSO and IOD.
-        \item Trend detection is not attribution! 
+        \item Trend detection is not attribution (to anthropogenic climate change)! 
         \begin{itemize}
             \item Detected trends may arise for a different reason than a change in global climate forcing.
             \item Attribution requires physical climate models that resolve the system dependent on prescribed external forcing.
