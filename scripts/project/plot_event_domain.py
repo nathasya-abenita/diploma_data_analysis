@@ -179,4 +179,4 @@ plt.title(
     "23–27 November 2025"
 )
 
-plt.savefig('./output/project/domain.png')
+plt.savefig('./docs/figs/domain.png')
