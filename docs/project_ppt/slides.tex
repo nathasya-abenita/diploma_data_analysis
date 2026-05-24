@@ -18,7 +18,7 @@
 
 \title[
 % Text entered here will appear in the bottom middle
-]{Trend Detection for Extreme Precipitation}
+]{Trend Detection for Extreme Events}
 
 \subtitle{Study case to 2025 flash floods in Sumatra, Indonesia}
 
@@ -67,7 +67,7 @@
 \subsection{Event Domain}
 \begin{frame}
     \centering
-    We focus in this region. Daily total precipitation from ERA5 (1940--2025) has been downloaded.
+    We focus in this region. Daily total precipitation from ERA5 (1940--2025) has been collected.
 
     \includegraphics[width=0.7\textwidth]{../../output/project/domain.png}
 \end{frame}
@@ -85,7 +85,10 @@
         \end{block}
 
         \medskip
-        \item It is interesting to also compare this data with (low-pass filtered) \textbf{global mean surface temperature (GMST)} anomalies relative to 1951-1980 \citep{gstchange,gistemp}.
+        \item It is interesting to also compare this data with a measure of anthropogenic climate change.
+        \begin{itemize}
+            \item  We use (low-pass filtered) \textbf{global mean surface temperature (GMST)} anomalies relative to 1951-1980 \citep{gstchange, gistemp}.
+        \end{itemize}
     \end{itemize}
 
     \column{0.5\textwidth}
@@ -142,7 +145,7 @@
         \centering
         \includegraphics[width=0.95\textwidth]{../../output/project/empirical_return_level_alt.png}
         \vspace{0.2cm}
-        {\scriptsize Empirical return level applied to altered Rx5day, using median annual maxima}
+        {\scriptsize Empirical return level applied to altered Rx5day}
     \end{columns}    
 \end{frame}
 
@@ -152,7 +155,7 @@
         \begin{itemize}
             \item We can use bootstrapping method--\textit{"pulling oneself up by one's bootstraps"}.
             \item This method works by assuming that while we have limited data, the data that we do have is nevertheless a representative sample of possible events.
-            \item We use the data as a distribution to resample from, and compute uncertainties using those.
+            \item We use the data as a distribution to resample from and compute uncertainties using those.
             \item By resampling data from our observation, we also call this \textbf{non-parametric bootstrap} method.
         \end{itemize}
 
@@ -164,18 +167,34 @@
     \end{columns}    
 \end{frame}
 
-\section{Stationary Analysis}
+\section{Classical Extreme Value Theory}
 
 \subsection{Generalized extreme value (GEV) distribution}
 \begin{frame}
     \begin{itemize}
-        \item Extreme Value Theory (EVT) is the statistical study of extreme deviations, e.g 100-year flood events.
-        \item The classical Extreme Value Theory approach is to study the statistics of *block maxima*
+        \item The classical Extreme Value Theory approach is to study the statistics of 
         \[M_n = \max (X_1, \ldots, X_n)\]
-        where $X_i$ are stationary random variables with a common distrubtion function $F$.
-        \item Stationary represents means that there's a weak dependence in a consecutive event.
-        \item Stationary analysis also means that the distribution parameters do not change in time.
+        where $X_i, \ldots, X_n$ is a sequence of independent random variables with a common distrubtion function $F$.
+        \item Example: Let $X_i$ be 5-day precipitation. If $n$ is the number of observations in a year, $M_n$ corresponds to Rx5day. 
     \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \begin{theorem}
+        If there exists two sequences of real numbers $\{a_n > 0\}$ and $\{b_n\}$ such that 
+        \[
+        P((M_n - b_n)/a_n \leq z) = G(z) \text{ as } n \rightarrow \infty,
+        \]
+        then the CDF $G(z)$ is a member of the GEV distribution
+        \[
+        G(z) = \exp{ \left\{ -\left[ 1 + \xi \left( \frac{z-\mu}{\sigma} \right) \right]^{-1/\xi} \right\} }
+        \]
+        given $\{z : 1 + \xi(z-\mu)/\sigma > 0 \}$ and $\sigma>0$.
+    \end{theorem} \pause
+
+    \begin{block}{Implication}
+        For large $n$, $M_n$ can also be approximated by a different member of GEV Distribution. We can model any annual maxima time series with GEV distribution!
+    \end{block}
 \end{frame}
 
 \subsection{Maximum likelihood estimation}
@@ -186,7 +205,7 @@
         \ell(\mu,\sigma,\xi)=
         \begin{cases}
         \displaystyle
-        -m\log\sigma
+        \sum_{i=1}^m\log\sigma
         -\left(1+\frac{1}{\xi}\right)
         \sum_{i=1}^m
         \log\!\left[1+\xi\left(\frac{z_i-\mu}{\sigma}\right)\right]
@@ -197,7 +216,7 @@
         & \xi\neq 0,
         \\[2em]
         \displaystyle
-        -m\log\sigma
+        -\sum_{i=1}^m\log\sigma
         -\sum_{i=1}^m
         \left(\frac{z_i-\mu}{\sigma}\right)
         -\sum_{i=1}^m
@@ -218,10 +237,131 @@
 \end{frame}
 
 \section{Non-Stationary Analysis}
+\subsection{Defining new model}
 
-\section{Remarks}
+\begin{frame}
+    \begin{itemize}
+        \item So far, we performed analysis under stationary assumption: the distribution parameters don't change over time.
+        \item However, under the warming climate, we know this is an unlikely assumption.
+        \item For instance, we know extreme precipitation scale \textbf{exponentially} with temperature, following the Claysius-Clapeyron relation.
+    \end{itemize}
+\end{frame}
 
-\section{Acknowledgement}
+\begin{frame}
+    \begin{block}{Modeling temperature effect on Rx5day}
+        Let $T(t)$ be GMST at year $t$. We define the Rx5day in year $t$ as
+        $$
+        Z_t \sim GEV(\mu(t), \sigma(t), \xi)
+        $$
+        with
+        $$
+        \mu(t) = \mu_0 \exp{\left( \alpha T(t) \right)}
+        $$
+        and
+        $$
+        \sigma(t) = \sigma_0 \exp{\left( \alpha T(t) \right)}
+        $$
+        where $\mu_0, \sigma_0$, and $\xi$ are the location, scale, and shape parameters of the distribution; and $\alpha$ is the trend due to GMST. 
+    \end{block}
+    \pause
+    \begin{itemize}
+        \item Here, we refer GMST as a \textbf{covariate}.
+        \item We will again apply maximum likelihood estimation to fit $\mu_0, \sigma_0, \xi, \alpha$. This is done by updating $\mu=\mu(t)$, $\sigma(t)$, and $z_i$ to $z_t$ to the previous likelihood functions.
+    \end{itemize}
+    \pause
+    \begin{alertblock}{Trend Detection}
+        When the confidence interval for $\alpha$ does not include zero, we conclude that the GMST has a significant effect on Rx5day.
+    \end{alertblock}
+\end{frame}
+
+\subsection{Results}
+
+\begin{frame}
+    \begin{itemize}
+        \item Bootstrap method is applied with 1,000 resamples. Note that resampling is done with pairs of Rx5day and GMST.
+        \item The confidence interval for $\alpha$ is $[0.25, 0.49]$.
+    \end{itemize}
+
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../../output/project/result_ts.png}
+
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../../output/project/result_gmst.png}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{itemize}
+            \item Let us plot the return level corresponding to the GMST anomaly in 2025 to represent the present climate.
+            \item Let's compare it with the plot corresponding pre-industrial climate by choosing $T=0$. We call this the counterfactual climate.
+        \end{itemize}
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
+        \vspace{0.2cm}
+        {\scriptsize Dashed line marks the 2025 event}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{definition}[Probability Ratio]
+            Let $p$ be the probability of exceeding the 2025 Rx5day event under a given climate state (actual or counterfactual conditions). Define
+            \[PR = p_{\text{actual}} / p_{\text{counterfactual}}.\]
+            If the confidence interval on the PR excludes one (no change), the distribution is significantly different between the two climates.
+        \end{definition}
+
+        \begin{itemize}
+            \item The probability ratio is estimated to be 171.9 (95\% CI: 83.9--232.9).
+            \item We can say \textit{the 2025 event is 172 more likely to happen under the current climate than under pre-industrial climate}.
+        \end{itemize}
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
+        \vspace{0.2cm}
+        {\scriptsize Dashed line marks the 2025 event}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+        \begin{definition}[Relative Magnitude Change]
+            The relative change in magnitude is assumed to be independent of magnitude, so it is expressed as a percentage change between the two climates:
+            \[
+            100 \left[ \exp{\alpha(T_{\text{actual}} - T_{\text{counterfactual}})} - 1\right]
+            \]
+        \end{definition}
+
+        \begin{itemize}
+            \item The percentage change in magnitude is estimated to be 52.6\% (95\% CI: 32.6\%--76.4\%).
+            \item We can say \textit{the 2025 event is 53\% more intense under the current climate than under pre-industrial climate}.
+        \end{itemize}
+    \column{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
+        \vspace{0.2cm}
+        {\scriptsize Dashed line marks the 2025 event}
+    \end{columns}
+\end{frame}
+
+\section{Concluding Remarks}
+\subsection{Remarks}
+\begin{frame}
+    \begin{itemize}
+        \item The nonparametric bootstrap should be interpreted with caution as it underestimates the real uncertainties involved in the frequency models \citep{kysely2008}.
+        \item We can expand the non-stationary model to include climate variability, e.g ENSO and IOD.
+        \item Trend detection is not attribution!
+    \end{itemize}
+\end{frame}
+
+\subsection{Acknowledgement}
 \begin{frame}
 \begin{itemize}
     \item Theory regarding EVT follows the classic textbook by \citet{coles2001}.
