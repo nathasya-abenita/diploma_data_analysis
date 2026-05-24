@@ -117,7 +117,7 @@
     \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
         \begin{definition}[Empirical Return Level]
-            Let $Z$ denotes the distribution of Rx5day annual maxima. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ data is
+            Let $Z$ denotes the distribution of Rx5day. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ data is
             \[
             P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
             \]
@@ -154,7 +154,7 @@
     \column{0.5\textwidth}
         \begin{itemize}
             \item We can use bootstrapping method--\textit{"pulling oneself up by one's bootstraps"}.
-            \item This method works by assuming that while we have limited data, the data that we do have is nevertheless a representative sample of possible events.
+            \item This method works by assuming that while we have limited data, the data that we do have is a representative sample of possible events.
             \item We use the data as a distribution to resample from and compute uncertainties using those.
             \item By resampling data from our observation, we also call this \textbf{non-parametric bootstrap} method.
         \end{itemize}
@@ -163,7 +163,7 @@
         \centering
         \includegraphics[width=0.95\textwidth]{../../output/project/bootstrap_demo.png}
         \vspace{0.2cm}
-        {\scriptsize Empirical return level applied to Rx5day and its resampled dataset}
+        {\scriptsize Empirical return level applied to Rx5day including 1,000 resampling}
     \end{columns}    
 \end{frame}
 
@@ -172,7 +172,8 @@
 \subsection{Generalized extreme value (GEV) distribution}
 \begin{frame}
     \begin{itemize}
-        \item The classical Extreme Value Theory approach is to study the statistics of 
+        \item Empirical return values are not enough. We often need extrapolation and address the uncertainty from empirical return levels. This leads to extreme value theory (EVT)... \pause
+        \item The classical EVT approach is to study the statistics of 
         \[M_n = \max (X_1, \ldots, X_n)\]
         where $X_i, \ldots, X_n$ is a sequence of independent random variables with a common distrubtion function $F$.
         \item Example: Let $X_i$ be 5-day precipitation. If $n$ is the number of observations in a year, $M_n$ corresponds to Rx5day. 
@@ -193,7 +194,7 @@
     \end{theorem} \pause
 
     \begin{block}{Implication}
-        For large $n$, $M_n$ can also be approximated by a different member of GEV Distribution. We can model any annual maxima time series with GEV distribution!
+        For large $n$, $M_n$ can also be approximated by a different member of GEV distribution. We can model any annual maxima time series with GEV distribution: $\text{GEV}(\mu, \sigma, \xi)$!
     \end{block}
 \end{frame}
 
@@ -237,11 +238,11 @@
 \end{frame}
 
 \section{Non-Stationary Analysis}
-\subsection{Defining new model}
+\subsection{Defining a new model}
 
 \begin{frame}
     \begin{itemize}
-        \item So far, we performed analysis under stationary assumption: the distribution parameters don't change over time.
+        \item So far, the theory remains valid under the assumption of stationarity: the distribution parameters don't change over time.
         \item However, under the warming climate, we know this is an unlikely assumption.
         \item For instance, we know extreme precipitation scale \textbf{exponentially} with temperature, following the Claysius-Clapeyron relation.
     \end{itemize}
@@ -301,6 +302,7 @@
             \item Let's compare it with the plot corresponding pre-industrial climate by choosing $T=0$. We call this the counterfactual climate.
         \end{itemize}
     \column{0.5\textwidth}
+        \vfill
         \centering
         \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
         \vspace{0.2cm}
@@ -311,17 +313,22 @@
 \begin{frame}
     \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
-        \begin{definition}[Probability Ratio]
+        \begin{definition}[Probability Ratio]<1->
             Let $p$ be the probability of exceeding the 2025 Rx5day event under a given climate state (actual or counterfactual conditions). Define
-            \[PR = p_{\text{actual}} / p_{\text{counterfactual}}.\]
+            \[PR = p_{\text{actual}} / p_{\text{counterfactual}}.\] \pause
             If the confidence interval on the PR excludes one (no change), the distribution is significantly different between the two climates.
         \end{definition}
 
+        \uncover<2-| hold>
+        {
         \begin{itemize}
+            
             \item The probability ratio is estimated to be 179.3 (95\% CI: 80.6--240.3).
             \item We can say \textit{the 2025 event is 179 more likely to happen under the current climate than under pre-industrial climate}.
         \end{itemize}
+        }
     \column{0.5\textwidth}
+        \vfill
         \centering
         \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
         \vspace{0.2cm}
@@ -331,7 +338,7 @@
 
 \begin{frame}
     \begin{columns}[T,onlytextwidth]
-    \column{0.5\textwidth}
+    \column{0.5\textwidth}<1->
         \begin{definition}[Relative Magnitude Change]
             The relative change in magnitude is assumed to be independent of magnitude, so it is expressed as a percentage change between the two climates:
             \[
@@ -339,11 +346,15 @@
             \]
         \end{definition}
 
+        \uncover<2-| hold>
+        {
         \begin{itemize}
             \item The percentage change in magnitude is estimated to be 53.4\% (95\% CI: 32.6\%--78.7\%).
             \item We can say \textit{the 2025 event is 53\% more intense under the current climate than under pre-industrial climate}.
         \end{itemize}
+        }
     \column{0.5\textwidth}
+        \vfill
         \centering
         \includegraphics[width=\textwidth]{../../output/project/result_return_level.png}
         \vspace{0.2cm}
