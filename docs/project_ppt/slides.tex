@@ -18,7 +18,7 @@
 
 \title[
 % Text entered here will appear in the bottom middle
-]{Trend Detection for Extreme Events}
+]{Trend Detection for Extreme Precipitation}
 
 \subtitle{Study case to heavy rain in 2025 flash floods in Sumatra, Indonesia}
 
@@ -203,12 +203,29 @@
         given $\{z : 1 + \xi(z-\mu)/\sigma > 0 \}$ and $\sigma>0$.
     \end{theorem} \pause
 
-    \begin{block}{Implication}
+    \begin{alertblock}{Implication}
         \begin{itemize}
             \item For large $n$, $M_n$ can also be approximated by a different member of GEV distribution. 
             \item We can model appropriate annual maxima time series with GEV distribution: $\text{GEV}(\mu, \sigma, \xi)$!
         \end{itemize}
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}
+    \begin{columns}[onlytextwidth]
+    \column{0.5\textwidth}
+    \begin{block}{Interpreting distribution parameters}
+    \begin{itemize}
+        \item $\mu$ : location
+        \item $\sigma$ : scale
+        \item $\xi$ : shape
+    \end{itemize}
     \end{block}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{../figs/varying_params.png}
+    \end{columns}
 \end{frame}
 
 \subsection{Maximum likelihood estimation (MLE)}
@@ -216,8 +233,13 @@
     \begin{itemize}
         \item The principle of MLE is to choose the model with greatest likelihood. Assume that $Z_1, ..., Z_m$ are independent variables having the GEV distribution. The likelihood function is
         \[ \ell(\mu, \sigma, \xi) = \prod_{i=1}^m P(\mu, \sigma, \xi \vert z_1, ..., z_m) \]
-        given independent realizations of $z_1, ..., z_m$. \pause
-        \item The log-likelihood for the GEV parameters is
+        given independent realizations of $z_1, ..., z_m$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \begin{itemize}
+     \item The log-likelihood for the GEV parameters is
         \[
         \ell(\mu,\sigma,\xi)=
         \begin{cases}
@@ -244,10 +266,13 @@
         \end{cases}
         \]
         subject to $1+\xi \left[ (z_i-\mu)/\sigma \right]>0, i=1,\dots,m.$
-        \pause
-        \item We define estimated distribution parameters, $\hat{\mu}, \hat{\sigma}, \hat{\xi}$, as the solution to maximize $\ell(\mu, \sigma, \xi)$ given their respective domain.
-        \item Here, I used \texttt{scipy.minimize} method to solve this numerically.
     \end{itemize}
+    \begin{alertblock}{Implementation}
+        \begin{itemize}
+            \item We define estimated distribution parameters, $\hat{\mu}, \hat{\sigma}, \hat{\xi}$, as the solution to maximize $\ell(\mu, \sigma, \xi)$ given their respective domain.
+            \item Here, I used \texttt{scipy.minimize} method to solve this numerically.
+        \end{itemize}
+    \end{alertblock}
 \end{frame}
 
 \section{Non-Stationary Analysis}
@@ -310,28 +335,28 @@
 \end{frame}
 
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column{0.45\textwidth}
-        \begin{minipage}[t][0.5\textheight][t]{\linewidth}
+        % \begin{minipage}[t][0.35\textheight][t]{\linewidth}
             \begin{itemize}
-                \item Let us plot the return level corresponding to the GMST anomaly in 2025 to represent the present climate.
-                \item Let's compare it with the plot corresponding pre-industrial climate by choosing $T=0$. We call this the counterfactual climate.
+                \item Let us plot the return level corresponding to the GMST anomaly in 2025 to represent the \textbf{present climate}.
+                \item Let's compare it with the plot corresponding pre-industrial climate by choosing $T=0$. We call this the \textbf{counterfactual climate}.
             \end{itemize}
-        \end{minipage}
+        % \end{minipage}
     \column{0.5\textwidth}
-        \begin{minipage}[t][0.5\textheight][c]{\linewidth}
+        % \begin{minipage}[t][0.5\textheight][c]{\linewidth}
             \centering
             \includegraphics[width=\textwidth]{../figs/result_return_level.png}
             \vspace{0.2cm}
             {\scriptsize Dashed line marks the 2025 event}
-        \end{minipage}
+        % \end{minipage}
     \end{columns}
 \end{frame}
 
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column<1->{0.45\textwidth}
-        \begin{minipage}[t][0.5\textheight][t]{\linewidth}
+        % \begin{minipage}[t][0.35\textheight][t]{\linewidth}
             \begin{definition}[Probability Ratio]
                 Let $p$ be the probability of exceeding the 2025 Rx5day event under a given climate state (actual or counterfactual conditions). Define
                 \[PR = p_{\text{actual}} / p_{\text{counterfactual}}.\] 
@@ -345,21 +370,21 @@
                 \item We can say \textit{the 2025 event is 179 more likely to happen under the current climate than under pre-industrial climate}.
             \end{itemize}
             }
-        \end{minipage}
+        % \end{minipage}
     \column{0.5\textwidth}
-        \begin{minipage}[t][0.5\textheight][c]{\linewidth}
+        % \begin{minipage}[t][0.5\textheight][c]{\linewidth}
             \centering
             \includegraphics[width=\textwidth]{../figs/result_return_level.png}
             \vspace{0.2cm}
             {\scriptsize Dashed line marks the 2025 event}
-        \end{minipage}
+        % \end{minipage}
     \end{columns}
 \end{frame}
 
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column{0.5\textwidth}<1->
-        \begin{minipage}[t][0.5\textheight][t]{\linewidth}
+        % \begin{minipage}[t][0.35\textheight][t]{\linewidth}
             \begin{definition}[Relative Magnitude Change]
                 The relative change in magnitude is assumed to be independent of magnitude, so it is expressed as a percentage change between the two climates:
                 \[
@@ -374,18 +399,18 @@
                 \item We can say \textit{the 2025 event is 53\% more intense under the current climate than under pre-industrial climate}.
             \end{itemize}
             }
-        \end{minipage}
+        % \end{minipage}
     \column{0.5\textwidth}
-        \begin{minipage}[t][0.5\textheight][c]{\linewidth}
+        % \begin{minipage}[t][0.5\textheight][c]{\linewidth}
             \centering
             \includegraphics[width=\textwidth]{../figs/result_return_level.png}
             \vspace{0.2cm}
             {\scriptsize Dashed line marks the 2025 event}
-        \end{minipage}
+        % \end{minipage}
     \end{columns}
 \end{frame}
 
-\section{Concluding Remarks}
+\section{Final Remarks}
 \subsection{Remarks}
 \begin{frame}
     \begin{itemize}

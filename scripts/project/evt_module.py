@@ -312,7 +312,7 @@ def plot_data_vs_time(time: list, data: list, ax=None, label=None):
     ax.set_xlabel('Year'); ax.set_ylabel('Rx5day (mm)')
     return ax
 
-def plot_fit_return_level (params, ax=None, label=None, color='tab:blue', rp_max=1_000):
+def plot_fit_return_level (params, ax=None, label=None, color='tab:blue', rp_max=1_000, ls=None):
 
     # Define return periods vector
     T = np.logspace(np.log10(1.01), np.log10(rp_max), 200)
@@ -324,7 +324,7 @@ def plot_fit_return_level (params, ax=None, label=None, color='tab:blue', rp_max
         _, ax = plt.subplots(figsize=(7,5))
 
     # Fitted curve
-    ax.plot(T, zT, label=label, color=color)
+    ax.plot(T, zT, label=label, color=color, ls=ls)
 
     return ax
 
