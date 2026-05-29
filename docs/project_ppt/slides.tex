@@ -17,13 +17,13 @@
 \input{loadslides.tex} % Loads packages and some defined commands
 
 \title[
-% Text entered here will appear in the bottom middle
+
 ]{Trend Detection for Extreme Precipitation}
 
 \subtitle{Study case to heavy rain in 2025 flash floods in Sumatra, Indonesia}
 
 \author[
-% Text entered here will appear in the bottom left corner
+
 ]{
     Nathasya Christien 
 }
@@ -57,12 +57,16 @@
         {
         \includegraphics[width=1.0\textwidth]{../figs/sat.png}
         \vspace{0.2cm}
-        {\scriptsize Heavy flooding in coastal areas of northeastern of Aceh \\ (Source: \href{https://www.esa.int/ESA_Multimedia/Images/2025/12/Severe_flooding_in_Sumatra_Indonesia}{ESA})}
+        {
+            \scriptsize 
+            Heavy flooding in coastal areas of northeastern of \\ 
+            \vspace{-1em}
+            Aceh in 29 Nov 2025 (Source: \href{https://www.esa.int/ESA_Multimedia/Images/2025/12/Severe_flooding_in_Sumatra_Indonesia}{ESA})}
         }
         \column{0.45\textwidth}
     \item At the end of November 2025, Sumatra was devastated by exceptional monsoon rains and a rare tropical storm by Cyclone Senyar.
-    \item This triggers massive flash floods and widespread landslides across provinces with more than 3.2–3.3 million people have been affected. 
-    \item Arising questions for such high impact event:
+    \item This triggers massive flash floods and widespread landslides with more than 3 million people have been affected. 
+    \item Arising questions for a high impact event:
     
     \begin{enumerate}
         \item Is such an extreme event statistically to happen once in a while?
@@ -85,7 +89,7 @@
 \subsection{Data Pre-Processing}
 \begin{frame}
     \begin{columns}[T,onlytextwidth]
-    \column{0.5\textwidth}
+    \column{0.5\textwidth}<1->
     \begin{itemize}
         \item We will use area-averaged \textbf{Rx5day} (annual maxima of 5-day precipitation).
         
@@ -94,11 +98,11 @@
             \texttt{cdo -yearmax -runsum,5 out.nc rx5day.nc}
         \end{block}
 
-        \medskip
+        \uncover <2-| hold>{\medskip 
         \item It is interesting to also compare this data with a measure of anthropogenic climate change.
         \begin{itemize}
             \item  We use (low-pass filtered) \textbf{global mean surface temperature (GMST)} anomalies relative to 1951-1980 \citep{gstchange, gistemp}.
-        \end{itemize}
+        \end{itemize}}
     \end{itemize}
 
     \column{0.5\textwidth}
@@ -118,20 +122,20 @@
             The terminology $X$-year return level means a value that is expected \textbf{to be exceeded} exactly once in the next $X$ years.
         \end{definition}
 
-        \item Another example: The 100-year event has a 1\% change of happening each year, meaning you expect to see at least one 100-year event every 100 years.
-        \item Empirically, we can derive this from observation.
+        \item Another example: The 100-year event has a 1\% chance of happening each year, meaning you expect to see at least one 100-year event every 100 years.
+       % \item Empirically, we can derive this from observation.
     \end{itemize}
 \end{frame}
 
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column{0.5\textwidth}
         \begin{definition}[Empirical Return Level]
-            Let $Z$ denotes the distribution of Rx5day. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ data is
+            Let $Z$ be the distribution of Rx5day. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ is
             \[
-            P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
+            p = P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
             \]
-            which corresponds to the the return year of $1/P(Z > z_{(i)})$.
+            which corresponds to the the return year of $1/p$.
         \end{definition}
     \column{0.5\textwidth}
         \centering
@@ -142,31 +146,52 @@
 \end{frame}
 
 \subsection{Uncertainty in empirical return level}
+% \begin{frame}
+%     \begin{columns}[onlytextwidth]
+%     \column{0.5\textwidth}
+%         \begin{itemize}
+%             \item A small change in the data can have large consequences for the computation of return levels and return periods.
+%             \item For example, let's replace the recent extreme event in 2025 (the highest record) with a "common" annual maxima.
+%             \item Note that it's becoming uncertain to estimate the 100-year event by comparing both plots.
+%         \end{itemize}
+
+%     \column{0.5\textwidth}
+%         \centering
+%         \includegraphics[width=0.95\textwidth]{../figs/empirical_return_level_alt.png}
+%         \vspace{0.2cm}
+%         {\scriptsize Empirical return level applied to altered Rx5day}
+%     \end{columns}    
+% \end{frame}
+
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column{0.5\textwidth}
         \begin{itemize}
-            \item A small change in the data series can have large consequences for the computation of return levels and return periods.
-            \item For example, let's say we replace the recent extreme event in 2025 (the highest record) with a "common" annual maxima.
-            \item Note that it's becoming uncertain to estimate the 100-year event by comparing both plots.
+            % \item A small change in the data can have large consequences for the computation of return levels and return periods.
+            \item We can use bootstrapping method--\textit{"pulling oneself up by one's bootstraps"}.
+            \item This method works by assuming that while we have limited data, the data is a representative sample of possible events.
+            \item We use the data as a distribution to resample from and compute uncertainties using those.
+            \item By resampling data from our observation, we also call this \textbf{non-parametric bootstrap} method.
         \end{itemize}
 
     \column{0.5\textwidth}
         \centering
-        \includegraphics[width=0.95\textwidth]{../figs/empirical_return_level_alt.png}
+        \includegraphics[width=0.95\textwidth]{../figs/bootstrap_demo.png}
         \vspace{0.2cm}
-        {\scriptsize Empirical return level applied to altered Rx5day}
+        {\scriptsize Empirical return level applied to Rx5day including 1,000 resampling}
     \end{columns}    
 \end{frame}
 
 \begin{frame}
-    \begin{columns}[T,onlytextwidth]
+    \begin{columns}[onlytextwidth]
     \column{0.5\textwidth}
         \begin{itemize}
-            \item We can use bootstrapping method--\textit{"pulling oneself up by one's bootstraps"}.
-            \item This method works by assuming that while we have limited data, the data that we do have is a representative sample of possible events.
-            \item We use the data as a distribution to resample from and compute uncertainties using those.
-            \item By resampling data from our observation, we also call this \textbf{non-parametric bootstrap} method.
+            \item Empirical return values are not enough.
+            \begin{itemize}
+                \item We need extrapolation
+                \item Address the uncertainty from empirical return levels
+            \end{itemize}
+            \item This leads to extreme value theory (EVT) which lets us fit the extremes to a distribution!
         \end{itemize}
 
     \column{0.5\textwidth}
@@ -182,10 +207,9 @@
 \subsection{Generalized extreme value (GEV) distribution}
 \begin{frame}
     \begin{itemize}
-        \item Empirical return values are not enough. We often need extrapolation and address the uncertainty from empirical return levels, which leads to extreme value theory (EVT)! \pause
         \item The classical EVT approach is to study the statistics of 
         \[M_n = \max (X_1, \ldots, X_n)\]
-        where $X_i, \ldots, X_n$ is a sequence of independent random variables with a common distrubtion function $F$.
+        where $X_1, \ldots, X_n$ is a sequence of independent random variables with a common distribution function $F$.
         \item Example: Let $X_i$ be 5-day precipitation. If $n$ is the number of observations in a year, $M_n$ corresponds to Rx5day. 
     \end{itemize}
 \end{frame}
@@ -205,7 +229,7 @@
 
     \begin{alertblock}{Implication}
         \begin{itemize}
-            \item For large $n$, $M_n$ can also be approximated by a different member of GEV distribution. 
+            \item For large $n$, $M_n$ can be approximated by GEV distribution. 
             \item We can model appropriate annual maxima time series with GEV distribution: $\text{GEV}(\mu, \sigma, \xi)$!
         \end{itemize}
     \end{alertblock}
@@ -231,9 +255,10 @@
 \subsection{Maximum likelihood estimation (MLE)}
 \begin{frame}
     \begin{itemize}
-        \item The principle of MLE is to choose the model with greatest likelihood. Assume that $Z_1, ..., Z_m$ are independent variables having the GEV distribution. The likelihood function is
-        \[ \ell(\mu, \sigma, \xi) = \prod_{i=1}^m P(\mu, \sigma, \xi \vert z_1, ..., z_m) \]
-        given independent realizations of $z_1, ..., z_m$.
+        \item The principle of MLE is to choose the model with greatest likelihood. Assume that $Z_1, ..., Z_m$ are independent variables having the GEV distribution. Given independent realizations of $z_1, ..., z_m$, the likelihood function is
+        \[ L(\mu, \sigma, \xi) = \prod_{i=1}^m P(z_i; \mu, \sigma, \xi). \]
+        \item It is more convenient to work with log-likelihood function
+        \[ \ell(\mu, \sigma, \xi) = \log L(\mu, \sigma, \xi) = \sum_{i=1}^m \log P(z_i; \mu, \sigma, \xi). \]
     \end{itemize}
 \end{frame}
 
@@ -282,7 +307,7 @@
     \begin{itemize}
         \item So far, the theory remains valid under the assumption of stationarity: the distribution parameters don't change over time.
         \item However, under the warming climate, we know this is an unlikely assumption.
-        \item For instance, we know extreme precipitation scale \textbf{exponentially} with temperature, following the Claysius-Clapeyron relation.
+        \item For instance, we know extreme precipitation scales \textbf{exponentially} with temperature, following the Claysius-Clapeyron relation.
     \end{itemize}
 \end{frame}
 
@@ -305,7 +330,7 @@
     \pause
     \begin{itemize}
         \item Here, we refer GMST as a \textbf{covariate}.
-        \item We will again apply maximum likelihood estimation to fit $\mu_0, \sigma_0, \xi, \alpha$. This is done by updating $\mu=\mu(t)$, $\sigma(t)$, and $z_i$ to $z_t$ to the previous likelihood functions.
+        \item We will again apply MLE to fit $\mu_0, \sigma_0, \xi, \alpha$.
     \end{itemize}
     \pause
     \begin{alertblock}{Trend Detection}
@@ -358,7 +383,7 @@
     \column<1->{0.45\textwidth}
         % \begin{minipage}[t][0.35\textheight][t]{\linewidth}
             \begin{definition}[Probability Ratio]
-                Let $p$ be the probability of exceeding the 2025 Rx5day event under a given climate state (actual or counterfactual conditions). Define
+                Let $p$ be the probability of exceeding the 2025 event under a given climate state (actual or counterfactual conditions). Define
                 \[PR = p_{\text{actual}} / p_{\text{counterfactual}}.\] 
                 If the confidence interval on the PR excludes one (no change), the distribution is significantly different between the two climates.
             \end{definition}
@@ -367,7 +392,7 @@
             {
             \begin{itemize}
                 \item The probability ratio is estimated to be 179.3 (95\% CI: 80.6--240.3).
-                \item We can say \textbf{the 2025 event is 179 more likely to happen under the current climate than under pre-industrial climate}.
+                \item We can say \textbf{the 2025 event is 179$\times$ more likely to happen under the current climate than under pre-industrial climate}.
             \end{itemize}
             }
         % \end{minipage}
@@ -427,10 +452,17 @@
 \subsection{Acknowledgement}
 \begin{frame}
 \begin{itemize}
-    \item Theory regarding EVT follows the classic textbook by \textbf{\citet{coles2001}}.
+    \item EVT materials follows the classic textbook by \textbf{\citet{coles2001}}.
     \item Material on non-parametric bootstrap method follows a helpful notebook from \textbf{\href{https://comptools.climatematch.io/tutorials/W2D3_ExtremesandVariability/student/W2D3_Tutorial2.html}{Climatematch Academy}}.
     \item Trend detection follows the work of \textbf{World Weather Attribution} to the same event \citep{wwa} and its protocol for probabilistic attribution study \citep{philip2020protocol}.
 \end{itemize}
+
+\centering
+\bigskip
+\bigskip
+\textbf{Find my full analysis in this notebook!}
+
+\url{https://github.com/nathasya-abenita/diploma_data_analysis/}
 \end{frame}
 
 \begin{frame}[allowframebreaks]{References}
