@@ -29,10 +29,10 @@
 }
 
 \institute{
-    Numerical Methods and Data Analysis in Geoscience Course \\
-    Earth System Physics Section \\
+    Numerical Methods and Data Analysis in Geoscience \\
+    Earth System Physics \\
     ICTP}
-\date{\today}
+\date{June 1, 2026}
 
 \begin{document}
 
@@ -133,9 +133,9 @@
         \begin{definition}[Empirical Return Level]
             Let $Z$ be the distribution of Rx5day. Given ranked yearly maximum data $z_{(1)} \leq z_{(2)} \leq ... \leq z_{(m)}$, the probability of exceeding a value with rank $i$ is
             \[
-            p = P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
+            p_i \equiv P(Z > z_{(i)}) = 1 - P(Z \leq z_{(i)}) = 1 - i/(m+1)
             \]
-            which corresponds to the the return year of $1/p$.
+            which corresponds to the the return year of $1/p_i$.
         \end{definition}
     \column{0.5\textwidth}
         \centering
@@ -186,9 +186,9 @@
     \begin{columns}[onlytextwidth]
     \column{0.5\textwidth}
         \begin{itemize}
-            \item Empirical return values are not enough.
+            \item Empirical return values are not enough. \\We need:
             \begin{itemize}
-                \item We need extrapolation
+                \item Extrapolation
                 \item Address the uncertainty from empirical return levels
             \end{itemize}
             \item This leads to extreme value theory (EVT) which lets us fit the extremes to a distribution!
@@ -240,9 +240,9 @@
     \column{0.5\textwidth}
     \begin{block}{Interpreting distribution parameters}
     \begin{itemize}
-        \item $\mu$ : location
-        \item $\sigma$ : scale
-        \item $\xi$ : shape
+        \item $\mu$ : location -- "to shift the center"
+        \item $\sigma$ : scale -- "magnitude of variability"
+        \item $\xi$ : shape -- "between Gumbel, Fréchet and Weibull families"
     \end{itemize}
     \end{block}
     
@@ -307,7 +307,7 @@
     \begin{itemize}
         \item So far, the theory remains valid under the assumption of stationarity: the distribution parameters don't change over time.
         \item However, under the warming climate, we know this is an unlikely assumption.
-        \item For instance, we know extreme precipitation scales \textbf{exponentially} with temperature, following the Claysius-Clapeyron relation.
+        \item For instance, we know extreme precipitation scales \textbf{exponentially} with temperature, following the Clausius-Clapeyron relation.
     \end{itemize}
 \end{frame}
 
